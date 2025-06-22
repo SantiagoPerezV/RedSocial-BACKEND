@@ -5,6 +5,7 @@ import { Post, PostDocument } from "./schemas/post.schema";
 import { CreatePostDto } from './dto/createPost.dto';
 import { GetPostsDto, SortBy } from './dto/getPosts.dto';
 import { AuthService } from '../auth/auth.service'
+import { User } from "src/auth/schemas/user.schema";
 
 @Injectable()
 export class PostsService{
@@ -19,7 +20,7 @@ export class PostsService{
 
         const newPost = new this.postModel({
             ...createPostDto, //Todos los valores que tiene el dto, no hace falta definirlos todos como aca
-            autor: UserId,
+            usuario: UserId,
             imagenUrl: finalImagenUrl, //Del dto solo se modifica la imagenUrl
             likes:[],
         })

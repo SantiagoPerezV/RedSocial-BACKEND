@@ -23,7 +23,7 @@ export class Post {
     @Prop({default: false})
     estaEliminado: boolean;
 
-    @Prop({type: MongooseSchema.Types.ObjectId, ref: 'User'})
+    @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'User', default: [] })
     likes: User[];
 
     @Prop()

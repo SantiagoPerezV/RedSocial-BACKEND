@@ -1,10 +1,10 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Body } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Body, Headers, Get, Delete } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreatePostDto } from './dto/createPost.dto';
 import { PostsService } from './posts.service';
-import { GetPostsDto } from './dto/getPosts.dto';
+import { GetPostsDto, SortBy } from './dto/getPosts.dto';
 
 @Controller('posts') //ruta donde funciona este controlador
 export class PostsController {
@@ -24,9 +24,41 @@ export class PostsController {
     async crearPost( //Función que maneja el registro
     @UploadedFile() file: Express.Multer.File, //Aca cae el archivo
     @Body() postData: CreatePostDto, //Aca caen los demas atributos (string, boolean, number)
-    userId: string,
+    @Headers('user-id') userId: string, // capturás el id desde headers
     ) {
         postData.imagenUrl = file?.filename;
         return this.postsService.create(postData, userId);
     }
+
+    @Get('obtenerPosts')
+    async obtenerPosts(
+        @Body() getData: GetPostsDto, //Si cambio valores del getPost en el body, lo toma como parametro
+    ){
+        return this.postsService.findAll(getData);
+    }
+
+    @Delete('eliminarPost')
+    async eliminarPost(
+        @Body() deleteData
+    ){
+        return this.postsService.softDelete(deleteData._id, deleteData.usuario);
+    }
+
+    @Post('darMeGusta')
+    async darMeGusta(
+        @Body('postId') postId,
+        @Body('userId') userId
+    ){
+        return this.postsService.addLike(postId, userId);
+    }
+
+    @Delete('quitarMeGusta')
+    async quitarMeGusta(
+        @Body('postId') postId,
+        @Body('userId') userId
+    ){
+        return this.postsService.removeLike(postId, userId);
+    }
+
+    
 }
