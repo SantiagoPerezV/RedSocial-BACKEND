@@ -27,7 +27,9 @@ export class AuthController {
     @UploadedFile(FileValidationPipe) file: Express.Multer.File, //Aca cae el archivo
     @Body() userData: RegisterDto //Aca caen los demas atributos (string, boolean, number)
     ) {
-        userData.photo = file?.filename;
+        if(file){
+            userData.photo = `/uploads/${file?.filename}`;
+        }
         return this.authService.register(userData);
     }
     

@@ -26,7 +26,10 @@ export class PostsController {
     @Body() postData: CreatePostDto, //Aca caen los demas atributos (string, boolean, number)
     @Headers('user-id') userId: string, // capturás el id desde headers
     ) {
-        postData.imagenUrl = file?.filename;
+        if(file){
+            postData.imagenUrl = `/uploads/${file?.filename}`;
+        }
+
         return this.postsService.create(postData, userId);
     }
 

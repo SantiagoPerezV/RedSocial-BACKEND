@@ -22,7 +22,6 @@ export class AuthService{
                 ],
             });
             
-            //PREGUNTAR por qué estas validaciones me aparecen en el Postman como success, pero igualmente no ingresa los datos
             if(existeUser){
                 if(existeUser.username === username.toLowerCase()){
                     throw new ConflictException('El nombre de usuario ya existe');
