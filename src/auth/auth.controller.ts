@@ -29,6 +29,8 @@ export class AuthController {
     ) {
         if(file){
             userData.photo = `/uploads/${file?.filename}`;
+        }else{
+            userData.photo = `/uploads/photo-predeterminate.webp`
         }
         return this.authService.register(userData);
     }

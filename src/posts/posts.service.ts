@@ -34,6 +34,8 @@ export class PostsService{
         //Desestructuramos el Objeto DTO
         const{ sortBy, usuarioId, offset = 0, limit = 10} = getPostsDto;
 
+        let posts: Post[] = []
+
         //Consultar a la base, excluir publicaciones eliminadas
         const query = this.postModel.find({estaEliminado:false})
 
@@ -47,20 +49,58 @@ export class PostsService{
 
         //ordenar por fecha o cantidad de likes
         if(sortBy === SortBy.LIKES){
-            query.sort({'likes.length': -1, 'createdAt': -1})
+            const consulta: any[] = [
+                { $match: { estaEliminado: false } },
+                {
+                    $addFields: {
+                        likesCount: { $size: '$likes' }
+                    }
+                },
+                { $sort: { likesCount: -1, createdAt: -1} },
+                { $skip: offset },
+                { $limit: limit },
+                {
+                    $lookup: {
+                      from: 'users',
+                      localField: 'usuario',
+                      foreignField: '_id',
+                      as: 'usuario'
+                    }
+                  },
+                  { $unwind: '$usuario' },
+                  {
+                    $project: {
+                      titulo: 1,
+                      descripcion: 1,
+                      imagenUrl: 1,
+                      createdAt: 1,
+                      likes: 1,
+                      likesCount: 1,
+                      usuario: {
+                        _id: 1,
+                        username: 1,
+                        name:1,
+                        last_name: 1,
+                        photo: 1
+                      },
+                    }
+                }
+            ];
+              
+            posts = await this.postModel.aggregate(consulta).exec();
         }else{
             query.sort({'createdAt': -1})
+
+            //Aplicación paginación
+            query.skip(offset).limit(limit);
+    
+            //Poblar la información del usuario
+            query.populate('usuario', 'username name last_name photo')
+    
+            //Ejecutar la consulta
+            posts = await query.exec();
         }
-
-        //Aplicación paginación
-        query.skip(offset).limit(limit);
-
-        //Poblar la información del usuario
-        query.populate('usuario', 'username name last_name photo')
-
-        //Ejecutar la consulta
-        const posts = await query.exec();
-
+        
         //Obtener el conteo total de paginación
         const total = await this.postModel.countDocuments({
             estaEliminado:false, ...(usuarioId ? {usuario: usuarioId} : {})})

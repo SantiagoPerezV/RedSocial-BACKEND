@@ -27,14 +27,14 @@ export class GetPostsDto{
 
     @ApiPropertyOptional({default:0, description: 'Offset para paginación'})
     @IsOptional({message:'El offset es opcional'})
-    @Min(0, {message: 'El offset debe ser mayor o igual a 0'})
+    @Type(() => Number)
+    @IsNumber()
     offset?: number = 0;
 
     @ApiPropertyOptional({description: 'Link para paginación', default: 10})
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
-    @Min(1, {message: 'El limit debe ser mayor o igual a uno'})
     limit?: number = 10
 
 }

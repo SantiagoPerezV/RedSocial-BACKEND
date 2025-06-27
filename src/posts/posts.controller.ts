@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Body, Headers, Get, Delete } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Body, Headers, Get, Delete, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -35,9 +35,10 @@ export class PostsController {
 
     @Get('obtenerPosts')
     async obtenerPosts(
-        @Body() getData: GetPostsDto, //Si cambio valores del getPost en el body, lo toma como parametro
-    ){
-        return this.postsService.findAll(getData);
+        @Query() query: GetPostsDto
+    ) 
+    {
+        return this.postsService.findAll(query);
     }
 
     @Delete('eliminarPost')
