@@ -6,6 +6,14 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
 
+//Antes del authService, creamos el payload. Es el codigo donde tenemos atributos 
+export interface JwtPayload{
+    sub: string; //ID unico del usuario.
+    username: string; //Guardamos el nombre de usuario
+    roles?: string[]; //Array de roles para el control de accesos
+
+}
+
 @Injectable()
 export class AuthService{
     constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
