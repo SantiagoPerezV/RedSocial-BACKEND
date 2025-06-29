@@ -5,6 +5,7 @@ import { User, UserDocument } from './schemas/user.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 
 //Antes del authService, creamos el payload. Es el codigo donde tenemos atributos 
 export interface JwtPayload{
@@ -16,7 +17,7 @@ export interface JwtPayload{
 
 @Injectable()
 export class AuthService{
-    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
+    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>, private jwtService: JwtService){}
 
     async register(registerDto: RegisterDto): Promise<any>{
         try {
@@ -116,10 +117,22 @@ export class AuthService{
 
             // Quitar el campo password antes de devolver
             const { password: _, ...userWithoutPassword } = existeUser.toObject();
+            
+            //Cargamos el payload del usuario
+            const payload = {
+                sub: existeUser._id,
+                username: existeUser.username,
+            };
+          
+            const token = this.jwtService.sign(payload); //Genera el token mediante el payload
 
             return {
+                success: true,
                 message: 'Inicio de sesión exitoso',
+                token,
+                expiresIn: '15m',
                 user: userWithoutPassword,
+                payload
             };
 
         } catch (error) {

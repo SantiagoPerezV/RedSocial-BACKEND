@@ -40,7 +40,7 @@ export class JwtAuthGuard extends AuthGuard('jwt'){ //AuthGuard tipo jwt clase p
                     id: '6855debbe6c5cd1da2e205fg',
                     username:'swagger_user',
                     email: 'swagger@gmail.com',
-                    roles: ['user']
+                    perfil: 'user'
                 }
             }
 

@@ -6,8 +6,9 @@ import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
 import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
 import { LoginDto } from './dto/login.dto';
+import {ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 
-
+@ApiTags('Auth')
 @Controller('auth') //ruta donde funciona este controlador
 export class AuthController {
     constructor(private readonly authService: AuthService){};
@@ -22,6 +23,12 @@ export class AuthController {
             },
         }),
     }))
+    @ApiOperation({
+        summary: 'Crear un usuario',
+        description: 'Registrar un usuario nuevo'
+    })
+    @ApiResponse({ status: 201, description: 'Usuario registado exitosamente' })
+    @ApiResponse({ status: 400, description: 'Datos inválidos' })
 
     async register( //Función que maneja el registro
     @UploadedFile(FileValidationPipe) file: Express.Multer.File, //Aca cae el archivo
@@ -36,6 +43,12 @@ export class AuthController {
     }
     
     @Post('login') //Acción Post en la ruta login. (auth/login)
+    @ApiOperation({
+        summary: 'Loguear un usuario',
+        description: 'Iniciar sesion con un usuario existente'
+    })
+    @ApiResponse({ status: 201, description: 'Inicio de sesión exacto' })
+    @ApiResponse({ status: 400, description: 'Datos inválidos' })
     async login(
         @Body() userLogin: LoginDto
     ) {

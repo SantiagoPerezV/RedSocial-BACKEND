@@ -22,11 +22,11 @@ export class JwtStrategy extends PassportStrategy(Strategy){
 
         //Traermos las vairables necesarias del componente padre
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeadesAsBearerToken(), //Extraer el token del header, siempre y cuando sea authentication -> alli va el token
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), //Extraer el token del header, siempre y cuando sea authentication -> alli va el token
             
             ignoreExpiration: false, //Configuracion de expiracion
 
-            secretOrkey: configService.get<string>('JWT_SECRET'), //Palabra secreta para la generación del token
+            secretOrKey: configService.get<string>('JWT_SECRET'), //Palabra secreta para la generación del token
         })
 
     }
@@ -42,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy){
         return{
             id: payload.sub,
             username: payload.username,
-            roles: payload.roles || ['user'] //Si no tiene ningun rol, asumimos que es un usuario
+            roles: payload.roles || 'user' //Si no tiene ningun rol, asumimos que es un usuario
         } 
     }
 

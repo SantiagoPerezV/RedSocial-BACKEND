@@ -25,9 +25,21 @@ import { TokenController } from './controller/token.controller';
 
 @Module({
   // forFeature: Es una función de configuración que registra uno o más modelos de Mongoose para que estén disponibles solo dentro de este módulo (AuthModule)
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
-  controllers: [AuthController],
-  providers: [AuthService],
-  exports: [AuthService], //Declaro el servicio de auth como exportable para usar en otros modulos
+  imports: [
+    ConfigModule,
+    PassportModule,
+    JwtModule.registerAsync({ //Configurar el módulo JWT cuando tengas disponibles las variables de entorno
+      imports:[ConfigModule], // Asegura que las variables estén cargadas
+      inject: [ConfigService], // Se inyecta el servicio de configuración
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'), // Se accede de forma segura
+        signOptions: { expiresIn: '15m' } //Expira en 15 minutos
+      })
+    }),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
+  ],
+  controllers: [AuthController, TokenController],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard],
+  exports: [AuthService, JwtStrategy], //Declaro el servicio de auth como exportable para usar en otros modulos
 })
 export class AuthModule {}

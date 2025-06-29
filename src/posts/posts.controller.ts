@@ -5,7 +5,9 @@ import { extname } from 'path';
 import { CreatePostDto } from './dto/createPost.dto';
 import { PostsService } from './posts.service';
 import { GetPostsDto, SortBy } from './dto/getPosts.dto';
+import {ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 
+@ApiTags('Posts')
 @Controller('posts') //ruta donde funciona este controlador
 export class PostsController {
     constructor(private readonly postsService: PostsService){};

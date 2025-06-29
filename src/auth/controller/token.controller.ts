@@ -48,7 +48,7 @@ export class TokenController{
     }) //Indicamos explicaciones del body, que tipo tiene que devolver, descripcion y un ejemplo de devolución
 
     async autorizar(
-        @Body tokenDto: TokenDto
+        @Body() tokenDto: TokenDto
         ){
             try{
                 const {token} = tokenDto;
