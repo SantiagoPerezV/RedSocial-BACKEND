@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Body, Headers, Get, Delete, Query } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Body, UseGuards, Get, Delete, Query, Req, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -6,6 +6,7 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { PostsService } from './posts.service';
 import { GetPostsDto, SortBy } from './dto/getPosts.dto';
 import {ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('Posts')
 @Controller('posts') //ruta donde funciona este controlador
@@ -22,14 +23,21 @@ export class PostsController {
             },
         }),
     }))
-
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth() 
     async crearPost( //Función que maneja el registro
     @UploadedFile() file: Express.Multer.File, //Aca cae el archivo
     @Body() postData: CreatePostDto, //Aca caen los demas atributos (string, boolean, number)
-    @Headers('user-id') userId: string, // capturás el id desde headers
+    @Req() req // capturás el id authentication headers
     ) {
         if(file){
             postData.imagenUrl = `/uploads/${file?.filename}`;
+        }
+
+        const userId = req.user?.id
+
+        if(!userId){
+            throw new BadRequestException('ID de usuario no disponible en el token');
         }
 
         return this.postsService.create(postData, userId);
@@ -37,33 +45,58 @@ export class PostsController {
 
     @Get('obtenerPosts')
     async obtenerPosts(
-        @Query() query: GetPostsDto
+        @Query() query: GetPostsDto,
     ) 
     {
         return this.postsService.findAll(query);
     }
 
     @Delete('eliminarPost')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     async eliminarPost(
-        @Body() deleteData
+        @Body() deleteData,
+        @Req() req
     ){
-        return this.postsService.softDelete(deleteData._id, deleteData.usuario);
+        const userId = req.user?.id
+
+        if(!userId){
+            throw new BadRequestException('ID de usuario no disponible en el token');
+        }
+
+        return this.postsService.softDelete(deleteData._id, userId);
     }
 
     @Post('darMeGusta')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     async darMeGusta(
         @Body('postId') postId,
-        @Body('userId') userId
+        @Req() req
     ){
+        const userId = req.user?.id
+
+            if(!userId){
+                throw new BadRequestException('ID de usuario no disponible en el token');
+            }
+
         return this.postsService.addLike(postId, userId);
     }
 
     @Delete('quitarMeGusta')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     async quitarMeGusta(
-        @Body('postId') postId,
-        @Body('userId') userId
+        @Body() dataPost,
+        @Req() req
     ){
-        return this.postsService.removeLike(postId, userId);
+        const userId = req.user?.id
+
+        if(!userId){
+            throw new BadRequestException('ID de usuario no disponible en el token');
+        }
+
+        return this.postsService.removeLike(dataPost._id, userId);
     }
 
     
