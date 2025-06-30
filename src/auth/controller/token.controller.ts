@@ -39,12 +39,12 @@ export class TokenController{
     @ApiBody({
         type: TokenDto,
         description: 'Token JWT a validar',
-        // examples: {
-        //     validToken: {
-        //         summary: 'Token JWT válido',
-        //         value: {token: ''} //PONER TOKEN DE EJEMPLO
-        //     }
-        // }
+        examples: {
+            validToken: {
+                summary: 'Token JWT válido',
+                value: {token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJz...'} //PONER TOKEN DE EJEMPLO
+            }
+        }
     }) //Indicamos explicaciones del body, que tipo tiene que devolver, descripcion y un ejemplo de devolución
 
     async autorizar(
@@ -58,7 +58,7 @@ export class TokenController{
                 this.logger.debug('Token verificado correctamente') //Debuggeo
 
                 //Extraer el ID del usuario
-                const userId = payload.id;
+                const userId = payload.sub;
                 if(!userId){
                     this.logger.warn('Token sin id (sub) de usuario') //Advertencia que se guarda 
                     throw new UnauthorizedException('Token con estructura inválida')
@@ -83,6 +83,7 @@ export class TokenController{
                         email: userData.email,
                         name: userData.name,
                         last_name: userData.last_name,
+                        photo: userData.photo,
                         perfil:'user' 
                     },
                     timestamp: new Date().toISOString()
