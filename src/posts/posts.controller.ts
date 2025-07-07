@@ -71,7 +71,7 @@ export class PostsController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     async darMeGusta(
-        @Body('postId') postId,
+        @Body() dataPost,
         @Req() req
     ){
         const userId = req.user?.id
@@ -80,7 +80,7 @@ export class PostsController {
                 throw new BadRequestException('ID de usuario no disponible en el token');
             }
 
-        return this.postsService.addLike(postId, userId);
+        return this.postsService.addLike(dataPost.post._id, userId); //Lo que llega por parametro es un objeto con un solo campo post, que tiene el id dentro
     }
 
     @Delete('quitarMeGusta')
@@ -96,7 +96,7 @@ export class PostsController {
             throw new BadRequestException('ID de usuario no disponible en el token');
         }
 
-        return this.postsService.removeLike(dataPost._id, userId);
+        return this.postsService.removeLike(dataPost.post._id, userId); //Lo que llega por parametro es un objeto con un solo campo post, que tiene el id dentro
     }
 
     
