@@ -64,7 +64,7 @@ export class PostsController {
             throw new BadRequestException('ID de usuario no disponible en el token');
         }
 
-        return this.postsService.softDelete(deleteData._id, userId);
+        return this.postsService.softDelete(deleteData.post._id, userId);
     }
 
     @Post('darMeGusta')

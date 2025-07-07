@@ -209,35 +209,4 @@ export class PostsService{
         return postUpdate;
     }
 
-    // async like(postId: string, usuarioId: string): Promise<Post>{
-    //     let postUpdate!: Post;
-
-    //     if(!Types.ObjectId.isValid(postId)){
-    //         throw new NotFoundException('ID del post inválido');
-    //     }
-
-    //     const post = await this.findOne(postId);
-
-    //     //Verificar si el usuario no le dio me gusta a la publicación
-    //     if(!post.likes || !(post.likes.some(like => like?toString() === usuarioId))){
-    //         postUpdate = await this.postModel.findByIdAndUpdate(
-    //             postId,
-    //             {$pull: {likes: usuarioId}},
-    //             {new: true}
-    //         ).exec();
-    //     }else{
-    //         postUpdate = await this.postModel.findByIdAndUpdate(
-    //             postId,
-    //             {$push: {likes: usuarioId}},
-    //             {new: true}
-    //         ).exec();
-    //     }
-
-
-    //     if(!postUpdate){
-    //         throw new NotFoundException('No se ha encontrado la publicación a la que has querido dar like');
-    //     }
-
-    //     return postUpdate;
-    // }
 }

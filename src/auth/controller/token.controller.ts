@@ -86,7 +86,7 @@ export class TokenController{
                     name: userData.name,
                     last_name: userData.last_name,
                     photo: userData.photo,
-                    perfil:'user' 
+                    perfil: userData.perfil 
                 },
                 timestamp: new Date().toISOString()
             };

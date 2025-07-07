@@ -42,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy){
         return{
             id: payload.sub,
             username: payload.username,
-            roles: payload.roles || 'user' //Si no tiene ningun rol, asumimos que es un usuario
+            perfil: user.perfil || 'user' //Si no tiene ningun rol, asumimos que es un usuario
         } 
     }
 

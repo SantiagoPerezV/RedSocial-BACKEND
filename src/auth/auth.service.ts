@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 export interface JwtPayload{
     sub: string; //ID unico del usuario.
     username: string; //Guardamos el nombre de usuario
-    roles?: string[]; //Array de roles para el control de accesos
+    perfil: string; //Array de roles para el control de accesos
 
 }
 
