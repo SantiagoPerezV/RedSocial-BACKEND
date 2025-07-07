@@ -1,27 +1,30 @@
-import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { User, UserDocument } from '../../auth/schemas/user.schema';
+import { CreateUserAdminDto } from '../dto/createUserAdmin.dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
-//Antes del authService, creamos el payload. Es el codigo donde tenemos atributos 
-export interface JwtPayload{
-    sub: string; //ID unico del usuario.
-    username: string; //Guardamos el nombre de usuario
-    perfil: string; //Array de roles para el control de accesos
-
-}
-
 @Injectable()
-export class AuthService{
-    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>, private jwtService: JwtService){}
+export class UsersService{
+    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
 
-    async register(registerDto: RegisterDto): Promise<any>{
+    async findAll(perfil: string) {
+        if(perfil !== 'admin'){
+            throw new ForbiddenException(`No tienes permisos para obtener usuarios`);
+        }
+        return this.userModel.find().select('-password -__v');
+    }
+    
+    async create(dto: CreateUserAdminDto, perfil:string) {
+        
+        if(perfil !== 'admin'){
+            throw new ForbiddenException(`No tienes permisos para registrar usuarios`);
+        }
+
         try {
-            const {username, email, password} = registerDto
+            const {username, email, password} = dto
 
             //Verificar si ya existe un usuario con el mismo username o mail
             const existeUser = await this.userModel.findOne({
@@ -41,7 +44,7 @@ export class AuthService{
             }
 
             //Verificar que las contraseñas se repiten
-            if(password != registerDto.repeatedPassword){
+            if(password != dto.repeatedPassword){
                 throw new BadRequestException({success: false, message:'Las contraseñas no son iguales'})
             }
 
@@ -54,9 +57,10 @@ export class AuthService{
                 username: username.toLowerCase(),
                 email: email.toLowerCase(),
                 password: hashedPassword,
-                name: registerDto.name,
-                last_name: registerDto.last_name,
-                photo: registerDto.photo ?? null,
+                name: dto.name,
+                last_name: dto.last_name,
+                photo: dto.photo ?? null,
+                perfil: dto.perfil || 'user'
             })
 
             //Una vez creado el usuario, lo guardamos en la bd
@@ -89,66 +93,51 @@ export class AuthService{
             }
 
         }     
+
     }
 
-    async login (loginDto: LoginDto): Promise <any>{
-
-        try {
-
-            const {usernameOrMail, password} = loginDto;
-    
-            //Verificar si ya existe un usuario con el mismo username o mail
-            const existeUser = await this.userModel.findOne({
-                $or:[
-                    {username: usernameOrMail.toLowerCase()},
-                    {email: usernameOrMail.toLowerCase()}
-                ],
-            });
-
-            if(!existeUser){
-                throw new ConflictException('El nombre de usuario o mail no es correcto');
-            }
-
-            // Comparar contraseñas
-            const sonIguales = await bcrypt.compare(password, existeUser.password);
-            if (!sonIguales) {
-                throw new BadRequestException('Contraseña incorrecta');
-            }
-
-            // Quitar el campo password antes de devolver
-            const { password: _, ...userWithoutPassword } = existeUser.toObject();
-            
-            //Cargamos el payload del usuario
-            const payload = {
-                sub: existeUser._id,
-                username: existeUser.username,
-            };
-          
-            const token = this.jwtService.sign(payload); //Genera el token mediante el payload
-
-            return {
-                success: true,
-                message: 'Inicio de sesión exitoso',
-                token,
-                expiresIn: '15m',
-                user: userWithoutPassword,
-                payload
-            };
-
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async findById(id: string): Promise<User>{
+    async deactivate(id: string, perfil: string) {
         
-        const user = await this.userModel.findOne({_id: id});
-
-        if (!user){
-            throw new NotFoundException('Usuario no encontrado');
+        if(perfil !== 'admin'){
+            throw new ForbiddenException(`No tienes permisos para desactivar usuarios`);
         }
 
-        return user;
+        const user = await this.userModel.findById(id)
+
+        if(!user){
+            throw new BadRequestException('No se encontró el usuario');
+        }
+
+        if(!user.isActive){
+            throw new BadRequestException('El usuario ya está desactivado');
+        }
+
+        user.isActive = false;
+        const nuevoUser = await user.save();
+
+        return { success: true, message: 'Usuario desactivado correctamente', data: nuevoUser };
+        
     }
 
+    async activate(id: string, perfil: string) {
+        
+        if(perfil !== 'admin'){
+            throw new ForbiddenException(`No tienes permisos para activar usuarios`);
+        }
+
+        const user = await this.userModel.findById(id)
+
+        if(!user){
+            throw new BadRequestException('No se encontró el usuario');
+        }
+
+        if(user.isActive){
+            throw new BadRequestException('El usuario ya está activado');
+        }
+
+        user.isActive = true;
+        const nuevoUser = await user.save();
+
+        return { success: true, message: 'Usuario activado correctamente', data: nuevoUser };
+    }
 }

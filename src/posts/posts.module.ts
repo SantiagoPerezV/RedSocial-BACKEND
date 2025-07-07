@@ -14,7 +14,7 @@ import { PassportModule } from '@nestjs/passport';
     imports: [
         MongooseModule.forFeature([
             { name: Post.name, schema: PostSchema },
-            {name: Comment.name, schema: CommentSchema}
+            { name: Comment.name, schema: CommentSchema }
         ]),
         AuthModule, //Importamos para usarlo en los modulos, sirve para las validaciones Jwt
         PassportModule, //Proporciona estrategias de autenticación y guards, para usarlo en los modulos
